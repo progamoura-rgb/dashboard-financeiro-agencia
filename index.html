@@ -4,299 +4,368 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Financeiro - Agência</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/umd/Recharts.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        .bg-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container-main {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div id="root"></div>
+<body>
+    <div class="container-main max-w-7xl mx-auto p-6 min-h-screen">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">📊 Dashboard Financeiro</h1>
+            <p class="text-white opacity-90">Projeções estratégicas para sua agência</p>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useMemo } = React;
-        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } = Recharts;
+        <!-- Controles -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Meta de Crescimento -->
+            <div class="card p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    🎯 Meta de Crescimento Anual (%)
+                </label>
+                <input type="range" id="growthSlider" min="0" max="100" value="20" class="w-full mb-2">
+                <div id="growthValue" class="text-center text-2xl font-bold text-blue-600">20%</div>
+            </div>
 
-        const FinancialProjectionsDashboard = () => {
-            // Dados históricos reais baseados nos gráficos fornecidos
-            const [historicalData] = useState([
-                // 2024 - Baseado no gráfico real
-                { month: 'Jun/24', revenue: 9000, expenses: 7000 },
-                { month: 'Jul/24', revenue: 8500, expenses: 6800 },
-                { month: 'Ago/24', revenue: 8200, expenses: 6500 },
-                { month: 'Set/24', revenue: 12000, expenses: 8500 }, // Pico real de 2024
-                { month: 'Out/24', revenue: 11500, expenses: 8200 },
-                { month: 'Nov/24', revenue: 11200, expenses: 8800 },
-                { month: 'Dez/24', revenue: 11800, expenses: 9200 },
-                // 2025 - Baseado no gráfico real  
-                { month: 'Jan/25', revenue: 7800, expenses: 6200 },
-                { month: 'Fev/25', revenue: 8200, expenses: 6500 },
-                { month: 'Mar/25', revenue: 9500, expenses: 7200 }, // Pico de 2025
-                { month: 'Abr/25', revenue: 8800, expenses: 7000 },
-                { month: 'Mai/25', revenue: 7500, expenses: 6200 },
-                { month: 'Jun/25', revenue: 8500, expenses: 6800 },
-                { month: 'Jul/25', revenue: 7800, expenses: 6400 },
-                { month: 'Ago/25', revenue: 7200, expenses: 6000 }
-            ]);
+            <!-- Cenário -->
+            <div class="card p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    📈 Cenário de Projeção
+                </label>
+                <select id="scenarioSelect" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                    <option value="0.8">Conservador (80%)</option>
+                    <option value="1.0" selected>Realista (100%)</option>
+                    <option value="1.3">Otimista (130%)</option>
+                </select>
+            </div>
 
-            const [targetGrowth, setTargetGrowth] = useState(20);
-            const [projectionMonths, setProjectionMonths] = useState(12);
-            const [scenario, setScenario] = useState('realista');
+            <!-- Período -->
+            <div class="card p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    📅 Período de Projeção (meses)
+                </label>
+                <input type="range" id="monthsSlider" min="6" max="24" value="12" class="w-full mb-2">
+                <div id="monthsValue" class="text-center text-xl font-bold text-green-600">12 meses</div>
+            </div>
+        </div>
 
-            // Cálculo de médias e tendências
-            const analytics = useMemo(() => {
-                const avgRevenue = historicalData.reduce((acc, curr) => acc + curr.revenue, 0) / historicalData.length;
-                const avgExpenses = historicalData.reduce((acc, curr) => acc + curr.expenses, 0) / historicalData.length;
-                const lastMonths = historicalData.slice(-3);
-                const recentAvg = lastMonths.reduce((acc, curr) => acc + curr.revenue, 0) / lastMonths.length;
-                const bestMonth = Math.max(...historicalData.map(d => d.revenue));
-                const worstMonth = Math.min(...historicalData.map(d => d.revenue));
-                
-                return {
-                    avgRevenue: Math.round(avgRevenue),
-                    avgExpenses: Math.round(avgExpenses),
-                    avgProfit: Math.round(avgRevenue - avgExpenses),
-                    recentAvg: Math.round(recentAvg),
-                    bestMonth,
-                    worstMonth,
-                    volatility: Math.round(((bestMonth - worstMonth) / avgRevenue) * 100)
-                };
-            }, [historicalData]);
+        <!-- KPIs Principais -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Receita Média Histórica</p>
+                        <p class="text-2xl font-bold text-gray-900">R$ 9.200</p>
+                    </div>
+                    <div class="text-blue-500 text-3xl">💰</div>
+                </div>
+            </div>
 
-            // Padrões sazonais
-            const seasonalFactors = {
-                'Jan': 0.85, 'Fev': 0.90, 'Mar': 1.05, 'Abr': 1.00, 'Mai': 1.10, 'Jun': 1.05,
-                'Jul': 1.15, 'Ago': 1.10, 'Set': 0.95, 'Out': 1.05, 'Nov': 0.90, 'Dez': 0.75
-            };
+            <div class="card p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Lucro Médio Mensal</p>
+                        <p class="text-2xl font-bold text-gray-900">R$ 2.300</p>
+                    </div>
+                    <div class="text-green-500 text-3xl">📈</div>
+                </div>
+            </div>
 
-            // Cenários de projeção
-            const scenarioMultipliers = {
-                conservador: 0.8,
-                realista: 1.0,
-                otimista: 1.3
-            };
+            <div class="card p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Meta Próximo Mês</p>
+                        <p id="nextMonthTarget" class="text-2xl font-bold text-gray-900">R$ 9.500</p>
+                    </div>
+                    <div class="text-purple-500 text-3xl">🎯</div>
+                </div>
+            </div>
 
-            // Geração de projeções
-            const projections = useMemo(() => {
-                const baseRevenue = analytics.recentAvg;
-                const multiplier = scenarioMultipliers[scenario];
-                const monthlyGrowthRate = (targetGrowth / 100) / 12;
-                
-                return Array.from({ length: projectionMonths }, (_, i) => {
-                    const currentDate = new Date(2025, 9 + i, 1);
-                    const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'short' });
-                    const seasonalFactor = seasonalFactors[monthName.charAt(0).toUpperCase() + monthName.slice(1)] || 1;
-                    
-                    const projectedRevenue = Math.round(
-                        baseRevenue * 
-                        (1 + monthlyGrowthRate * (i + 1)) * 
-                        seasonalFactor * 
-                        multiplier
-                    );
-                    
-                    const projectedExpenses = Math.round(projectedRevenue * 0.70);
-                    
-                    return {
-                        month: `${monthName.charAt(0).toUpperCase() + monthName.slice(1)}/${currentDate.getFullYear().toString().slice(-2)}`,
-                        revenue: projectedRevenue,
-                        expenses: projectedExpenses,
-                        profit: projectedRevenue - projectedExpenses,
-                        monthIndex: i
-                    };
-                });
-            }, [analytics.recentAvg, targetGrowth, projectionMonths, scenario]);
+            <div class="card p-6 border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Melhor Mês (Set/24)</p>
+                        <p class="text-2xl font-bold text-gray-900">R$ 12.000</p>
+                    </div>
+                    <div class="text-orange-500 text-3xl">🏆</div>
+                </div>
+            </div>
+        </div>
 
-            const monthlyTarget = Math.round(projections[0]?.revenue || analytics.recentAvg);
+        <!-- Gráfico de Projeções -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">📊 Projeção de Receitas vs Despesas</h2>
+            <canvas id="projectionsChart" width="400" height="200"></canvas>
+        </div>
 
-            return React.createElement('div', { className: 'max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen' }, [
-                // Header
-                React.createElement('div', { className: 'mb-8', key: 'header' }, [
-                    React.createElement('h1', { 
-                        className: 'text-3xl font-bold text-gray-900 mb-2',
-                        key: 'title'
-                    }, 'Projeções Financeiras - Agência'),
-                    React.createElement('p', { 
-                        className: 'text-gray-600',
-                        key: 'subtitle'
-                    }, 'Dashboard interativo para planejamento estratégico de receitas e metas')
-                ]),
+        <!-- Metas de Fechamento -->
+        <div class="card p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">🎯 Metas de Fechamento - Próximos 6 Meses</h3>
+            <div id="monthlyTargets" class="space-y-4">
+                <!-- Será preenchido dinamicamente -->
+            </div>
+        </div>
 
-                // Controles
-                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6 mb-8', key: 'controls' }, [
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md', key: 'growth-control' }, [
-                        React.createElement('label', { 
-                            className: 'block text-sm font-medium text-gray-700 mb-2',
-                            key: 'growth-label'
-                        }, 'Meta de Crescimento Anual (%)'),
-                        React.createElement('input', {
-                            type: 'range',
-                            min: '0',
-                            max: '100',
-                            value: targetGrowth,
-                            onChange: (e) => setTargetGrowth(Number(e.target.value)),
-                            className: 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer',
-                            key: 'growth-slider'
-                        }),
-                        React.createElement('div', { 
-                            className: 'text-center mt-2 text-2xl font-bold text-blue-600',
-                            key: 'growth-value'
-                        }, `${targetGrowth}%`)
-                    ]),
+        <!-- Insights -->
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">💡 Insights e Recomendações</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-2">🔍 Padrões Identificados:</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>• <strong>Pico histórico:</strong> Set/24 - R$ 12.000 (analise o que funcionou!)</li>
+                        <li>• <strong>2024 vs 2025:</strong> Queda significativa na performance</li>
+                        <li>• <strong>Tendência:</strong> 2025 em declínio desde maio</li>
+                        <li>• <strong>Oportunidade:</strong> Replicar estratégias de set/24</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-2">🚀 Ações Urgentes:</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>• <strong>Investigar set/24:</strong> Que campanha gerou o pico?</li>
+                        <li>• <strong>Revisar custos:</strong> Margem diminuiu em 2025</li>
+                        <li>• <strong>Meta outubro:</strong> Superar R$ 8.000 atual</li>
+                        <li>• <strong>Planejamento:</strong> Usar este dashboard mensalmente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md', key: 'scenario-control' }, [
-                        React.createElement('label', { 
-                            className: 'block text-sm font-medium text-gray-700 mb-2',
-                            key: 'scenario-label'
-                        }, 'Cenário de Projeção'),
-                        React.createElement('select', {
-                            value: scenario,
-                            onChange: (e) => setScenario(e.target.value),
-                            className: 'w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                            key: 'scenario-select'
-                        }, [
-                            React.createElement('option', { value: 'conservador', key: 'conservative' }, 'Conservador (80%)'),
-                            React.createElement('option', { value: 'realista', key: 'realistic' }, 'Realista (100%)'),
-                            React.createElement('option', { value: 'otimista', key: 'optimistic' }, 'Otimista (130%)')
-                        ])
-                    ]),
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white opacity-75">
+            <p>Dashboard criado para otimizar sua gestão financeira 🚀</p>
+        </div>
+    </div>
 
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md', key: 'months-control' }, [
-                        React.createElement('label', { 
-                            className: 'block text-sm font-medium text-gray-700 mb-2',
-                            key: 'months-label'
-                        }, 'Período de Projeção (meses)'),
-                        React.createElement('input', {
-                            type: 'range',
-                            min: '6',
-                            max: '24',
-                            value: projectionMonths,
-                            onChange: (e) => setProjectionMonths(Number(e.target.value)),
-                            className: 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer',
-                            key: 'months-slider'
-                        }),
-                        React.createElement('div', { 
-                            className: 'text-center mt-2 text-xl font-bold text-green-600',
-                            key: 'months-value'
-                        }, `${projectionMonths} meses`)
-                    ])
-                ]),
+    <script>
+        // Dados históricos reais
+        const historicalData = [
+            { month: 'Jun/24', revenue: 9000, expenses: 7000 },
+            { month: 'Jul/24', revenue: 8500, expenses: 6800 },
+            { month: 'Ago/24', revenue: 8200, expenses: 6500 },
+            { month: 'Set/24', revenue: 12000, expenses: 8500 }, // Pico
+            { month: 'Out/24', revenue: 11500, expenses: 8200 },
+            { month: 'Nov/24', revenue: 11200, expenses: 8800 },
+            { month: 'Dez/24', revenue: 11800, expenses: 9200 },
+            { month: 'Jan/25', revenue: 7800, expenses: 6200 },
+            { month: 'Fev/25', revenue: 8200, expenses: 6500 },
+            { month: 'Mar/25', revenue: 9500, expenses: 7200 },
+            { month: 'Abr/25', revenue: 8800, expenses: 7000 },
+            { month: 'Mai/25', revenue: 7500, expenses: 6200 },
+            { month: 'Jun/25', revenue: 8500, expenses: 6800 },
+            { month: 'Jul/25', revenue: 7800, expenses: 6400 },
+            { month: 'Ago/25', revenue: 7200, expenses: 6000 }
+        ];
 
-                // KPIs
-                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-4 gap-6 mb-8', key: 'kpis' }, [
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500', key: 'kpi1' }, [
-                        React.createElement('p', { className: 'text-sm font-medium text-gray-600', key: 'kpi1-label' }, 'Receita Média Histórica'),
-                        React.createElement('p', { className: 'text-2xl font-bold text-gray-900', key: 'kpi1-value' }, `R$ ${analytics.avgRevenue.toLocaleString()}`)
-                    ]),
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500', key: 'kpi2' }, [
-                        React.createElement('p', { className: 'text-sm font-medium text-gray-600', key: 'kpi2-label' }, 'Lucro Médio Mensal'),
-                        React.createElement('p', { className: 'text-2xl font-bold text-gray-900', key: 'kpi2-value' }, `R$ ${analytics.avgProfit.toLocaleString()}`)
-                    ]),
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500', key: 'kpi3' }, [
-                        React.createElement('p', { className: 'text-sm font-medium text-gray-600', key: 'kpi3-label' }, 'Meta Próximo Mês'),
-                        React.createElement('p', { className: 'text-2xl font-bold text-gray-900', key: 'kpi3-value' }, `R$ ${monthlyTarget.toLocaleString()}`)
-                    ]),
-                    React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500', key: 'kpi4' }, [
-                        React.createElement('p', { className: 'text-sm font-medium text-gray-600', key: 'kpi4-label' }, 'Volatilidade'),
-                        React.createElement('p', { className: 'text-2xl font-bold text-gray-900', key: 'kpi4-value' }, `${analytics.volatility}%`)
-                    ])
-                ]),
+        // Elementos DOM
+        const growthSlider = document.getElementById('growthSlider');
+        const growthValue = document.getElementById('growthValue');
+        const monthsSlider = document.getElementById('monthsSlider');
+        const monthsValue = document.getElementById('monthsValue');
+        const scenarioSelect = document.getElementById('scenarioSelect');
+        const nextMonthTarget = document.getElementById('nextMonthTarget');
+        const monthlyTargets = document.getElementById('monthlyTargets');
 
-                // Gráfico
-                React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md mb-8', key: 'chart' }, [
-                    React.createElement('h2', { 
-                        className: 'text-xl font-bold text-gray-900 mb-4',
-                        key: 'chart-title'
-                    }, 'Projeção de Receitas vs Despesas'),
-                    React.createElement(ResponsiveContainer, { width: '100%', height: 400, key: 'chart-container' },
-                        React.createElement(LineChart, { data: projections },
-                            React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
-                            React.createElement(XAxis, { dataKey: 'month' }),
-                            React.createElement(YAxis, { tickFormatter: (value) => `R$ ${(value / 1000).toFixed(0)}k` }),
-                            React.createElement(Tooltip, { formatter: (value) => [`R$ ${value.toLocaleString()}`, ''] }),
-                            React.createElement(Legend),
-                            React.createElement(Line, { 
-                                type: 'monotone', 
-                                dataKey: 'revenue', 
-                                stroke: '#3B82F6', 
-                                strokeWidth: 3,
-                                name: 'Receita Projetada'
-                            }),
-                            React.createElement(Line, { 
-                                type: 'monotone', 
-                                dataKey: 'expenses', 
-                                stroke: '#EF4444', 
-                                strokeWidth: 2,
-                                name: 'Despesas Projetadas',
-                                strokeDasharray: '5 5'
-                            })
-                        )
-                    )
-                ]),
+        // Chart.js instance
+        let chart;
 
-                // Metas de Fechamento
-                React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md mb-8', key: 'targets' }, [
-                    React.createElement('h3', { 
-                        className: 'text-lg font-bold text-gray-900 mb-4',
-                        key: 'targets-title'
-                    }, 'Metas de Fechamento - Próximos 6 Meses'),
-                    React.createElement('div', { className: 'space-y-4', key: 'targets-list' },
-                        projections.slice(0, 6).map((proj, index) => {
-                            const contractsNeeded = Math.ceil(proj.revenue / 1500);
-                            return React.createElement('div', { 
-                                className: 'flex justify-between items-center p-3 bg-gray-50 rounded-lg',
-                                key: `target-${index}`
-                            }, [
-                                React.createElement('div', { key: `target-left-${index}` }, [
-                                    React.createElement('p', { className: 'font-semibold text-gray-900', key: `target-month-${index}` }, proj.month),
-                                    React.createElement('p', { className: 'text-sm text-gray-600', key: `target-contracts-${index}` }, `${contractsNeeded} contratos necessários`)
-                                ]),
-                                React.createElement('div', { className: 'text-right', key: `target-right-${index}` }, [
-                                    React.createElement('p', { className: 'font-bold text-blue-600', key: `target-revenue-${index}` }, `R$ ${proj.revenue.toLocaleString()}`),
-                                    React.createElement('p', { className: 'text-sm text-green-600', key: `target-profit-${index}` }, `+R$ ${proj.profit.toLocaleString()} lucro`)
-                                ])
-                            ]);
-                        })
-                    )
-                ]),
-
-                // Insights
-                React.createElement('div', { className: 'bg-white p-6 rounded-lg shadow-md', key: 'insights' }, [
-                    React.createElement('h3', { 
-                        className: 'text-lg font-bold text-gray-900 mb-4',
-                        key: 'insights-title'
-                    }, '💡 Insights e Recomendações'),
-                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6', key: 'insights-grid' }, [
-                        React.createElement('div', { key: 'insights-left' }, [
-                            React.createElement('h4', { className: 'font-semibold text-gray-800 mb-2', key: 'patterns-title' }, 'Padrões Identificados:'),
-                            React.createElement('ul', { className: 'space-y-2 text-sm text-gray-600', key: 'patterns-list' }, [
-                                React.createElement('li', { key: 'pattern1' }, `• Pico histórico: Set/24 - R$ ${analytics.bestMonth.toLocaleString()} (o que funcionou?)`),
-                                React.createElement('li', { key: 'pattern2' }, '• 2024 vs 2025: Queda significativa na performance média'),
-                                React.createElement('li', { key: 'pattern3' }, `• Margem preocupante: Lucro diminuiu drasticamente em 2025`),
-                                React.createElement('li', { key: 'pattern4' }, '• Tendência negativa: Mai-Ago/25 em declínio constante')
-                            ])
-                        ]),
-                        React.createElement('div', { key: 'insights-right' }, [
-                            React.createElement('h4', { className: 'font-semibold text-gray-800 mb-2', key: 'actions-title' }, 'Ações Urgentes:'),
-                            React.createElement('ul', { className: 'space-y-2 text-sm text-gray-600', key: 'actions-list' }, [
-                                React.createElement('li', { key: 'action1' }, '• Analisar Set/24: Replicar estratégias que geraram o pico'),
-                                React.createElement('li', { key: 'action2' }, '• Revisar custos: Despesas proporcionalmente maiores em 2025'),
-                                React.createElement('li', { key: 'action3' }, '• Reverter queda: Implementar ações para outubro'),
-                                React.createElement('li', { key: 'action4' }, '• Otimizar margem: Focar em serviços de maior rentabilidade')
-                            ])
-                        ])
-                    ])
-                ])
-            ]);
+        // Fatores sazonais
+        const seasonalFactors = {
+            'Out': 1.05, 'Nov': 0.90, 'Dez': 0.75, 'Jan': 0.85, 'Fev': 0.90, 'Mar': 1.05,
+            'Abr': 1.00, 'Mai': 1.10, 'Jun': 1.05, 'Jul': 1.15, 'Ago': 1.10, 'Set': 0.95
         };
 
-        // Renderizar o componente
-        ReactDOM.render(React.createElement(FinancialProjectionsDashboard), document.getElementById('root'));
-    </script>
+        // Calcular projeções
+        function calculateProjections() {
+            const growth = parseInt(growthSlider.value);
+            const months = parseInt(monthsSlider.value);
+            const scenario = parseFloat(scenarioSelect.value);
+            
+            const recentAvg = 7800; // Média dos últimos 3 meses
+            const monthlyGrowthRate = (growth / 100) / 12;
+            
+            const projections = [];
+            const monthNames = ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'];
+            
+            for (let i = 0; i < months; i++) {
+                const monthName = monthNames[i % 12];
+                const seasonalFactor = seasonalFactors[monthName] || 1;
+                
+                const projectedRevenue = Math.round(
+                    recentAvg * 
+                    (1 + monthlyGrowthRate * (i + 1)) * 
+                    seasonalFactor * 
+                    scenario
+                );
+                
+                const projectedExpenses = Math.round(projectedRevenue * 0.70);
+                
+                projections.push({
+                    month: `${monthName}/25`,
+                    revenue: projectedRevenue,
+                    expenses: projectedExpenses,
+                    profit: projectedRevenue - projectedExpenses
+                });
+            }
+            
+            return projections;
+        }
 
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        // Atualizar gráfico
+        function updateChart() {
+            const projections = calculateProjections();
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const ctx = document.getElementById('projectionsChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: projections.map(p => p.month),
+                    datasets: [{
+                        label: 'Receita Projetada',
+                        data: projections.map(p => p.revenue),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true
+                    }, {
+                        label: 'Despesas Projetadas',
+                        data: projections.map(p => p.expenses),
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + (value/1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Atualizar metas mensais
+        function updateMonthlyTargets() {
+            const projections = calculateProjections().slice(0, 6);
+            
+            monthlyTargets.innerHTML = projections.map((proj, index) => {
+                const contractsNeeded = Math.ceil(proj.revenue / 1500);
+                return `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold text-gray-900">${proj.month}</p>
+                            <p class="text-sm text-gray-600">${contractsNeeded} contratos necessários</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-blue-600">R$ ${proj.revenue.toLocaleString()}</p>
+                            <p class="text-sm text-green-600">+R$ ${proj.profit.toLocaleString()} lucro</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Atualizar próximo mês
+        function updateNextMonth() {
+            const projections = calculateProjections();
+            nextMonthTarget.textContent = `R$ ${projections[0].revenue.toLocaleString()}`;
+        }
+
+        // Event listeners
+        growthSlider.addEventListener('input', function() {
+            growthValue.textContent = this.value + '%';
+            updateChart();
+            updateMonthlyTargets();
+            updateNextMonth();
+        });
+
+        monthsSlider.addEventListener('input', function() {
+            monthsValue.textContent = this.value + ' meses';
+            updateChart();
+            updateMonthlyTargets();
+        });
+
+        scenarioSelect.addEventListener('change', function() {
+            updateChart();
+            updateMonthlyTargets();
+            updateNextMonth();
+        });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateChart();
+            updateMonthlyTargets();
+            updateNextMonth();
+        });
+    </script>
 </body>
 </html>
